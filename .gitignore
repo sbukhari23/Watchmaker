@@ -144,3 +144,10 @@ crashlytics-build.properties
 *.jks
 /Builds/
 *.slnx
+
+# Local planning, tracking & AI-assistant files (never pushed)
+/CLAUDE.md
+/CLAUDE.local.md
+/.claude/
+/_planning/
+/_planning.meta
