@@ -32,7 +32,7 @@ namespace Watchmaker.Assembly
         {
             Vector3 a = _movementRoot.InverseTransformPoint(worldPosition);
             Vector3 b = _movementRoot.InverseTransformPoint(socket.transform.position);
-            return Vector3.Distance(a, b);
+            return new Vector2(a.x - b.x, a.z - b.z).magnitude;
         }
 
         SnapSocket Nearest(Vector3 worldPosition, out float distance)
@@ -71,10 +71,9 @@ namespace Watchmaker.Assembly
             {
                 SnapSocket s = _sockets[i];
                 if (s == null || s.IsFilled) continue;
-                if (s == nearest && distance <= s.CaptureRadius)
-                    s.SetGhost(Accepts(s, part) ? GhostState.Correct : GhostState.Wrong);
-                else
-                    s.SetGhost(GhostState.Hidden);
+                if (Accepts(s, part)) s.SetGhost(GhostState.Correct);
+                else if (s == nearest && distance <= s.CaptureRadius) s.SetGhost(GhostState.Wrong);
+                else s.SetGhost(GhostState.Hidden);
             }
         }
 

@@ -23,7 +23,7 @@ namespace Watchmaker.Assembly
         GhostState _ghostState = GhostState.Hidden;
 
         public string AcceptsPartId => _acceptsPartId;
-        public float CaptureRadius => _captureRadius;
+        public float CaptureRadius => Mathf.Max(_captureRadius, 0.018f);
         public float InstallTolerance => _installTolerance;
         public bool IsFilled { get; private set; }
 
