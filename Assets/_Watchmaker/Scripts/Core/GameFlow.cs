@@ -74,18 +74,21 @@ namespace Watchmaker.Core
 
         void Update()
         {
-            if (Current == Stage.Welcome && Time.time - _stageStart > 6f) Enter(Stage.Wheels);
+            if (Current == Stage.Welcome && !TutorialGuide.Showing && Time.time - _stageStart > 4f) Enter(Stage.Wheels);
             if (_runStart >= 0f && Current != Stage.Complete) RunSeconds = Time.time - _runStart;
             UpdateHint();
         }
 
         void OnGrabbed(WatchPart p)
         {
+            TutorialGuide.Dismiss();
             if (Current == Stage.Welcome) Enter(Stage.Wheels);
         }
 
         void OnInstalled(WatchPart p, SnapSocket s, float precision)
         {
+            TutorialGuide.Dismiss();
+            if (Current == Stage.Welcome) Enter(Stage.Wheels);
             _precisions.Add(precision);
             if (p.PartId.StartsWith("L1_")) _wheels++;
             else if (p.PartId == "L2_bridge") _bridge++;
@@ -119,7 +122,7 @@ namespace Watchmaker.Core
             {
                 case Stage.Welcome:
                     Title = "Welcome, watchmaker";
-                    Body = "Pinch a part from the tray and release it over its green mark.";
+                    Body = "Follow the guide, then pinch a part from the tray and release it over its green outline.";
                     Total = 0;
                     break;
                 case Stage.Wheels:
@@ -140,7 +143,7 @@ namespace Watchmaker.Core
                     break;
                 case Stage.Tighten:
                     Title = "Tighten the screws";
-                    Body = "Poke each screw three times with your fingertip.";
+                    Body = "Pinch the screwdriver on the right and touch its tip to each screw (or poke it three times with a fingertip).";
                     Total = 2;
                     if (_screwTargets != null) foreach (ScrewTarget t in _screwTargets) t.SetActive(true);
                     break;
