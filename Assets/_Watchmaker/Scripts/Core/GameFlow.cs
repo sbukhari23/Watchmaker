@@ -74,7 +74,7 @@ namespace Watchmaker.Core
 
         void Update()
         {
-            if (Current == Stage.Welcome && !TutorialGuide.Showing && Time.time - _stageStart > 4f) Enter(Stage.Wheels);
+            if (Current == Stage.Welcome && !TutorialGuide.Showing && Time.time - _stageStart > 4f) Enter(V2Story.Present ? Stage.Inspect : Stage.Wheels);
             if (_runStart >= 0f && Current != Stage.Complete) RunSeconds = Time.time - _runStart;
             UpdateHint();
         }
@@ -82,13 +82,13 @@ namespace Watchmaker.Core
         void OnGrabbed(WatchPart p)
         {
             TutorialGuide.Dismiss();
-            if (Current == Stage.Welcome) Enter(Stage.Wheels);
+            if (Current == Stage.Welcome && !V2Story.Present) Enter(Stage.Wheels);
         }
 
         void OnInstalled(WatchPart p, SnapSocket s, float precision)
         {
             TutorialGuide.Dismiss();
-            if (Current == Stage.Welcome) Enter(Stage.Wheels);
+            if (Current == Stage.Welcome && !V2Story.Present) Enter(Stage.Wheels);
             _precisions.Add(precision);
             if (p.PartId.StartsWith("L1_")) _wheels++;
             else if (p.PartId == "L2_bridge") _bridge++;
@@ -105,12 +105,29 @@ namespace Watchmaker.Core
         void OnScrewTightened(WatchPart p)
         {
             _tight++;
-            if (Current == Stage.Tighten) { Done = _tight; if (_tight >= 2) Enter(Stage.Wind); }
+            if (Current == Stage.Tighten) { Done = _tight; if (_tight >= 2) Enter(V2Story.Present ? Stage.CloseCase : Stage.Wind); }
         }
 
         void OnWound()
         {
-            if (Current == Stage.Wind) Enter(Stage.Complete);
+            if (Current == Stage.Wind) Enter(V2Story.Present ? Stage.Start : Stage.Complete);
+        }
+
+        public void SetProgress(int done, int total) { Done = done; Total = total; }
+
+        /// <summary>Called by V2Story when a story stage finishes; moves to the next stage only if 'from' is current.</summary>
+        public void V2Advance(Stage from)
+        {
+            if (Current != from) return;
+            switch (from)
+            {
+                case Stage.Inspect: Enter(Stage.Flip); break;
+                case Stage.Flip: Enter(Stage.OpenCase); break;
+                case Stage.OpenCase: Enter(Stage.Wheels); break;
+                case Stage.CloseCase: Enter(Stage.FlipBack); break;
+                case Stage.FlipBack: Enter(Stage.Wind); break;
+                case Stage.Start: Enter(Stage.Complete); break;
+            }
         }
 
         void Enter(Stage s)
@@ -147,9 +164,39 @@ namespace Watchmaker.Core
                     Total = 2;
                     if (_screwTargets != null) foreach (ScrewTarget t in _screwTargets) t.SetActive(true);
                     break;
+                case Stage.Inspect:
+                    Title = "Inspect the stopped watch";
+                    Body = "It froze at 3:47. Pinch the jeweler's loupe and hold its lens close to the watch to find 3 hidden faults.";
+                    Total = 3;
+                    break;
+                case Stage.Flip:
+                    Title = "Turn the watch over";
+                    Body = "Poke the case with a fingertip to flip it onto its face and reach the back.";
+                    Total = 1;
+                    break;
+                case Stage.OpenCase:
+                    Title = "Open the case back";
+                    Body = "Pinch the screwdriver and touch its tip to each of the 4 screws. Then poke the case back to lift it off.";
+                    Total = 5;
+                    break;
+                case Stage.CloseCase:
+                    Title = "Close the case";
+                    Body = "Poke the case back to set it on, then tighten the 4 screws with the screwdriver.";
+                    Total = 5;
+                    break;
+                case Stage.FlipBack:
+                    Title = "Turn the watch face-up";
+                    Body = "Poke the case to flip the watch back over.";
+                    Total = 1;
+                    break;
+                case Stage.Start:
+                    Title = "Start the movement";
+                    Body = "The pusher is unlocked now that the watch is wound. Poke the silver pusher on the right side of the case.";
+                    Total = 1;
+                    break;
                 case Stage.Wind:
                     Title = "Wind the watch";
-                    Body = "Circle your fingertip around the brass crown.";
+                    Body = V2Story.Present ? "Circle your fingertip around the brass crown on the left of the watch." : "Circle your fingertip around the brass crown.";
                     Total = 1;
                     if (_crown != null) _crown.SetActive(true);
                     break;
@@ -162,7 +209,7 @@ namespace Watchmaker.Core
                     Body = string.Format("Time {0}:{1:00}    Precision {2:0}%\nPoke the brass button to start again.",
                         (int)RunSeconds / 60, (int)RunSeconds % 60, AveragePrecision * 100f);
                     Total = 1; Done = 1;
-                    if (_driver != null) _driver.Run();
+                    if (_driver != null && !_driver.Running) _driver.Run();
                     ClearHint();
                     break;
             }

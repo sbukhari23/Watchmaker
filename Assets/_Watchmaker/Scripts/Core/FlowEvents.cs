@@ -4,7 +4,7 @@ using Watchmaker.Assembly;
 
 namespace Watchmaker.Core
 {
-    public enum Stage { Welcome, Wheels, Bridge, Screws, Tighten, Wind, Complete }
+    public enum Stage { Welcome, Wheels, Bridge, Screws, Tighten, Wind, Complete, Inspect, Flip, OpenCase, CloseCase, FlipBack, Start }
 
     /// <summary>Events for the post-snap game flow (loupe, screws, crown, running movement).</summary>
     public static class FlowEvents

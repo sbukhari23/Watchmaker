@@ -1,6 +1,7 @@
 using Oculus.Interaction.HandGrab;
 using Oculus.Interaction.Input;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Watchmaker.Assembly;
 
 namespace Watchmaker.Core
@@ -15,8 +16,10 @@ namespace Watchmaker.Core
         WatchPart[] _parts = new WatchPart[0];
         float _nextScan;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Boot() => new GameObject("PinchGrabber").AddComponent<PinchGrabber>();
+        // created on every scene load so the Restart button (scene reload) keeps hands working
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void Boot() { SceneManager.sceneLoaded -= Loaded; SceneManager.sceneLoaded += Loaded; }
+        static void Loaded(Scene s, LoadSceneMode m) => new GameObject("PinchGrabber").AddComponent<PinchGrabber>();
 
         void Scan()
         {
@@ -64,6 +67,7 @@ namespace Watchmaker.Core
 
         void TryGrab(Slot s, Vector3 point)
         {
+            if (V2Story.PartsLocked) return;
             WatchPart best = null; float bd = GrabRadius * Mathf.Max(1f, transform.lossyScale.x);
             foreach (WatchPart p in _parts)
             {

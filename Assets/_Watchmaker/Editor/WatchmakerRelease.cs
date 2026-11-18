@@ -28,6 +28,15 @@ namespace Watchmaker.EditorTools
             PlayerSettings.bundleVersion = "1.0.0";
             PlayerSettings.Android.bundleVersionCode = 2;
 
+            // one APK for Quest 2, Quest 3 and Quest 3S (written into com.oculus.supportedDevices)
+            OVRProjectConfig cfg = OVRProjectConfig.CachedProjectConfig;
+            if (cfg != null)
+            {
+                cfg.targetDeviceTypes = new System.Collections.Generic.List<OVRProjectConfig.DeviceType>
+                    { OVRProjectConfig.DeviceType.Quest2, OVRProjectConfig.DeviceType.Quest3, OVRProjectConfig.DeviceType.Quest3S };
+                OVRProjectConfig.CommitProjectConfig(cfg);
+            }
+
             var options = new BuildPlayerOptions
             {
                 scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),

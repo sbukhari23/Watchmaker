@@ -1,5 +1,6 @@
 using Oculus.Interaction.Input;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Watchmaker.Assembly;
 using Watchmaker.Mechanics;
 
@@ -23,8 +24,9 @@ namespace Watchmaker.Core
 
         public static bool Held { get; private set; }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Boot() => new GameObject("ScrewdriverTool").AddComponent<ScrewdriverTool>();
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void Boot() { SceneManager.sceneLoaded -= Loaded; SceneManager.sceneLoaded += Loaded; }
+        static void Loaded(Scene s, LoadSceneMode m) => new GameObject("ScrewdriverTool").AddComponent<ScrewdriverTool>();
 
         void Start()
         {
@@ -115,6 +117,17 @@ namespace Watchmaker.Core
         {
             if (Time.time - _lastTurn < TurnInterval) return;
             Vector3 tip = _tool.TransformPoint(_tipLocal);
+            foreach (V2Story.CaseScrew cs in V2Story.CaseScrews)
+            {
+                if (cs == null || !cs.Active || cs.T == null) continue;
+                if (Vector3.Distance(tip, cs.T.position) <= TipRadius)
+                {
+                    _lastTurn = Time.time;
+                    cs.Poke();
+                    _tool.Rotate(0f, 0f, 40f, Space.Self);
+                    return;
+                }
+            }
             foreach (ScrewTarget st in _screws)
             {
                 if (st == null || !st.Active || st.Tightened) continue;

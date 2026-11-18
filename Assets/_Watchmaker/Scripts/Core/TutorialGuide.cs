@@ -7,13 +7,15 @@ namespace Watchmaker.Core
     public sealed class TutorialGuide : MonoBehaviour
     {
         static readonly string[] Titles = {
-            "Welcome, watchmaker", "1. Pick up parts", "2. Place each part", "3. Tighten the screws", "4. Wind the crown", "Ready to begin?" };
+            "Welcome, watchmaker", "1. Pinch to hold", "2. Find the faults", "3. Open the case", "4. Rebuild the movement", "5. Tighten the screws", "6. Close, wind, start", "Ready to begin?" };
         static readonly string[] Bodies = {
-            "Rebuild this mechanical watch piece by piece.\nThis short guide takes under a minute.\nPoke the NEXT button with your index finger.",
-            "Reach out and PINCH a part between your thumb and index finger.\nKeep pinching to carry it. Open your fingers to let go.",
-            "A GREEN outline shows where the part belongs.\nRelease it over the outline and it snaps in.\nOrder: three wheels, the bridge, then two screws.",
-            "PINCH the screwdriver on the right of the bench and touch its tip to a screw until it is tight.\nPoking a screw with a fingertip works too.",
-            "Circle your fingertip around the brass crown to wind the watch and start it.\nTip: poke the brass lever on the left for a magnifying loupe.",
+            "This watch stopped at 3:47. You will find out why, open it, repair it and start it again.\nPoke the NEXT button with your index finger.",
+            "PINCH between your thumb and index finger to pick things up. Keep pinching to carry them, open your fingers to let go.\nPoke things with your fingertip to press them.",
+            "Pinch the jeweler's loupe on the right and hold its lens close to the watch.\nHidden faults appear under the lens. Hold still on each for a moment to log it.",
+            "Poke the case to turn the watch over. Pinch the screwdriver and touch its tip to the 4 screws, then poke the case back to lift it off.",
+            "Pinch each part from the tray and release it over its GREEN outline: three wheels, the bridge, then two screws.",
+            "Touch the screwdriver tip to each bridge screw until it is tight (a fingertip poke works too).",
+            "Put the back on and screw it down, flip the watch face-up, circle a fingertip around the crown to wind it, then poke the side pusher to start it.",
             "The panel above the bench always shows your current step and progress.\nPoke START to begin." };
 
         public static bool Showing { get; private set; }

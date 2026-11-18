@@ -25,6 +25,7 @@ namespace Watchmaker.Core
             SnapSocket[] sockets = FindObjectsByType<SnapSocket>(FindObjectsSortMode.None);
             WatchAssemblyManager asm = WatchAssemblyManager.Instance;
 
+            if (V2Story.Present) yield return V2Story.Instance.AutoPre();
             LoupeLever lever = FindFirstObjectByType<LoupeLever>();
             if (lever != null) { lever.Toggle(); yield return new WaitForSeconds(1.2f); }
 
@@ -47,10 +48,29 @@ namespace Watchmaker.Core
                 for (int i = 0; i < 3; i++) { t.Poke(); yield return new WaitForSeconds(0.4f); }
             Debug.Log("[AutoPlay] screws tightened, stage=" + GameFlow.Instance.Current);
 
+            if (V2Story.Present) yield return V2Story.Instance.AutoClose();
             CrownWinder crown = FindFirstObjectByType<CrownWinder>();
             for (int i = 0; i < 20; i++) { crown.AddDegrees(45f); yield return new WaitForSeconds(0.1f); }
+            if (V2Story.Present) yield return V2Story.Instance.AutoStart();
             yield return new WaitForSeconds(2f);
+            var check = new GameObject("RestartCheck"); DontDestroyOnLoad(check); check.AddComponent<RestartCheck>();
             Debug.Log("[AutoPlay] DONE, stage=" + GameFlow.Instance.Current + ", running=" + FindFirstObjectByType<MovementDriver>().Running + ", time=" + GameFlow.Instance.RunSeconds.ToString("F1") + "s, precision=" + GameFlow.Instance.AveragePrecision.ToString("F2"));
+            yield return new WaitForSeconds(1f);
+            var btn = FindFirstObjectByType<Watchmaker.UI.PokeButton>();
+            if (btn != null) btn.Restart(); else Debug.LogError("[AutoPlay] restart button missing");
+        }
+    }
+
+    /// <summary>Verifies the Restart button (scene reload) recreates the runtime systems.</summary>
+    public sealed class RestartCheck : MonoBehaviour
+    {
+        IEnumerator Start()
+        {
+            yield return new WaitForSeconds(1.5f);
+            bool pinch = GameObject.Find("PinchGrabber") != null, drv = GameObject.Find("ScrewdriverTool") != null, story = GameObject.Find("V2Story") != null;
+            string msg = "[AutoPlay] RESTART pinch=" + pinch + " screwdriver=" + drv + " story=" + story + " stage=" + (GameFlow.Instance != null ? GameFlow.Instance.Current.ToString() : "none");
+            if (pinch && drv && story) Debug.Log(msg); else Debug.LogError(msg);
+            Destroy(gameObject);
         }
     }
 }
